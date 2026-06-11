@@ -1,0 +1,25 @@
+{
+  "name": "mmo4wheels",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Juego de coches 2D top-down con arquitectura cliente-servidor autoritativa",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "smoke": "tsx server/scripts/smoke.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -41,7 +41,9 @@ Formato ligero tipo ADR: decisión, justificación y consecuencias. Si una decis
 - **Colyseus** está diseñado justo para nuestro caso: salas con estado autoritativo en servidor, sincronización automática de estado (Schema con patches binarios), ciclo de simulación a tick fijo.
 - **Navegador como plataforma**: distribución por URL (natural para un MMO), iteración rápida con Vite, sin builds nativos durante el POC.
 
-**Consecuencias**: el cliente vive en el navegador (limitaciones de WebSocket frente a UDP: aceptable para este género y esencial para web). Versiones concretas a fijar en el hito M0 con lo último estable (Node LTS, TypeScript 5.x, Colyseus 0.16.x; evaluar Phaser 4 si ya es estable en ese momento — no cambia el diseño).
+**Consecuencias**: el cliente vive en el navegador (limitaciones de WebSocket frente a UDP: aceptable para este género y esencial para web).
+
+**Resolución en M0 (2026‑06)**: versiones fijadas con lo último estable — **Phaser 4.1** (la 4.x ya es estable; era la evaluación prevista), **Colyseus 0.17** en servidor con **`@colyseus/sdk` 0.17** como SDK de cliente (sustituye al antiguo `colyseus.js`, que quedó en la línea 0.16), schema v4, Vite 8, TypeScript 5.9 (la 6.x es muy reciente; se actualizará tras el POC), Node ≥ 22. El emparejamiento servidor 0.17 ↔ SDK 0.17 quedó verificado con un smoke test de conectividad (`npm run smoke`).
 
 ### D4 — Física de coche arcade propia y compartida (sin motor de física)
 

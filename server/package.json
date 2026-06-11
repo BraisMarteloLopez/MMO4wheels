@@ -1,0 +1,19 @@
+{
+  "name": "@mmo4wheels/server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p scripts"
+  },
+  "dependencies": {
+    "@colyseus/schema": "^4.0.7",
+    "@mmo4wheels/shared": "*",
+    "colyseus": "^0.17.10"
+  },
+  "devDependencies": {
+    "@colyseus/sdk": "^0.17.42",
+    "@types/node": "^22.0.0"
+  }
+}
