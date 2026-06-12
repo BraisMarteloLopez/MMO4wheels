@@ -6,7 +6,7 @@ El cliente es un binario nativo de escritorio con **renderer propio** construido
 
 El objetivo actual es un POC (Proof of Concept): conducir un coche por un escenario con atmósfera propia y realizar interacciones reales con el servidor (movimiento autoritativo, zonas de interacción, persistencia del mundo).
 
-**Estado: re-planificado tras pivote a 3D nativo (2026‑06).** El esqueleto web M0 está completado y su servidor se conserva tal cual; el cliente web queda como sonda de debug hasta que el cliente nativo lo sustituya. Siguiente hito: **M0′ — toolchain C++/SDL3 GPU** (ver [plan del POC](docs/03-plan-poc.md)).
+**Estado: M0′ entregado** — cliente nativo compilando con build autocontenido (SDL3 + ImGui + glslang vía FetchContent), pipeline de shaders GLSL→SPIR-V, triángulo + overlay de debug, selftest headless. Pendiente: verificación visual en máquina con GPU. Siguiente hito: **M1′ — coche conducible en local** (ver [plan del POC](docs/03-plan-poc.md)). El servidor del M0 web se conserva tal cual; el cliente web queda como sonda de debug.
 
 ## Decisiones mayores
 
@@ -35,7 +35,7 @@ npm run smoke      # con el dev levantado: test de conectividad join + estado + 
 npm run typecheck  # comprueba tipos en los paquetes TS
 ```
 
-Las instrucciones de compilación del cliente nativo se añadirán con M0′.
+El cliente nativo se compila y ejecuta según [client-native/README.md](client-native/README.md) (CMake ≥ 3.24 y compilador C++20; el build descarga y compila sus dependencias solo).
 
 ## Documentación
 
