@@ -19,9 +19,18 @@ Demostrar, con el mínimo juego posible, que la base de MMO4wheels funciona:
 
 **Fuera** (explícitamente): PBR, GI, SSAO, antialiasing temporal, partículas GPU, animación esquelética, agua, día/noche, editor in-game, cross-compile de shaders (DX12/Metal/macOS), otros jugadores visibles, sonido, menús, login real, arte propio definitivo, móvil, optimización de red, despliegue en producción. Cada tentación de render va a un backlog, no al POC.
 
+## Modo de ejecución (actualizado 2026‑06)
+
+Reparto de roles acordado: **el usuario toma las decisiones de alto nivel y de diseño y hace las pruebas visuales/de feel; Claude ejecuta toda la ingeniería** (código, builds, verificación, documentación). Consecuencias prácticas:
+
+- Las estimaciones en "sesiones" de los hitos pasan a ser **techo de esfuerzo humano equivalente**, no ritmo esperado: los hitos se ejecutan en ráfagas de agente y el objetivo es tener el POC **en días**.
+- **Bucle de verificación en dos patas**: en el entorno remoto se verifica todo lo verificable sin GPU ni pantalla (compilación C++, tests headless de lógica y parsing, servidor completo); lo visual y el feel se prueban en la máquina del usuario, con comandos exactos incluidos en cada entrega.
+- **Cada hito termina en un commit pusheado** con instrucciones de ejecución y una lista corta de "qué mirar". El feedback útil del usuario es: pegar el error de compilación tal cual, o describir/capturar lo que ve.
+- Toolchain autocontenida: el build C++ solo requiere CMake ≥ 3.24 y un compilador; las dependencias (SDL3, ImGui, glslang como compilador de shaders, etc.) las descarga y compila el propio build con versiones fijadas.
+
 ## Hitos
 
-Cada hito termina en algo ejecutable y demostrable. Estimaciones en sesiones de ~2–4 h para una persona.
+Cada hito termina en algo ejecutable y demostrable. Estimaciones en sesiones de ~2–4 h equivalentes (ver Modo de ejecución).
 
 ### M0′ — Toolchain y triángulo (3–5 sesiones)
 
