@@ -49,6 +49,8 @@ Capas, de abajo arriba:
 
 Bucle del cliente: render a la tasa del monitor, totalmente desacoplado del tick de red (20 Hz); el muestreo de input se envía a tasa fija con número de secuencia.
 
+**Plataformas**: el objetivo es **Windows 10/11 x64** (driver Vulkan incluido en los drivers de GPU modernos de NVIDIA/AMD/Intel). Linux es el entorno de build y verificación headless del agente (compilación + selftest sin pantalla); macOS queda para post-POC (backend Metal + shadercross).
+
 ## Código compartido y constantes
 
 - `shared/` (TS) sigue siendo la fuente de verdad de **constantes** (tick rate, límites de input, parámetros de física) y **tipos de mensajes**, usada por el servidor.

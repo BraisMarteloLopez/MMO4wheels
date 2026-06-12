@@ -14,6 +14,7 @@ El objetivo actual es un POC (Proof of Concept): conducir un coche por un escena
 |---|---|
 | Estética | Low-poly 3D con foco artístico, vista aérea |
 | Arquitectura | Cliente‑servidor, servidor autoritativo (también en single player) |
+| Plataforma | **Windows 10/11 x64** (Linux como entorno de verificación del agente) |
 | Cliente | C++ + SDL3, renderer propio sobre SDL3 GPU API (GLSL 450 → SPIR-V, backend Vulkan) |
 | Servidor | Node.js + Colyseus 0.17 + TypeScript |
 | Simulación | Plana (2D en planta) a tick fijo, presentada en 3D |
@@ -35,7 +36,7 @@ npm run smoke      # con el dev levantado: test de conectividad join + estado + 
 npm run typecheck  # comprueba tipos en los paquetes TS
 ```
 
-El cliente nativo se compila y ejecuta según [client-native/README.md](client-native/README.md) (CMake ≥ 3.24 y compilador C++20; el build descarga y compila sus dependencias solo).
+El cliente nativo (**Windows 10/11**) se compila y ejecuta según [client-native/README.md](client-native/README.md) — Visual Studio 2022 con C++ es el único requisito; el build descarga y compila sus dependencias solo.
 
 ## Documentación
 

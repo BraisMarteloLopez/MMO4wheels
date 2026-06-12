@@ -24,7 +24,7 @@ Demostrar, con el mínimo juego posible, que la base de MMO4wheels funciona:
 Reparto de roles acordado: **el usuario toma las decisiones de alto nivel y de diseño y hace las pruebas visuales/de feel; Claude ejecuta toda la ingeniería** (código, builds, verificación, documentación). Consecuencias prácticas:
 
 - Las estimaciones en "sesiones" de los hitos pasan a ser **techo de esfuerzo humano equivalente**, no ritmo esperado: los hitos se ejecutan en ráfagas de agente y el objetivo es tener el POC **en días**.
-- **Bucle de verificación en dos patas**: en el entorno remoto se verifica todo lo verificable sin GPU ni pantalla (compilación C++, tests headless de lógica y parsing, servidor completo); lo visual y el feel se prueban en la máquina del usuario, con comandos exactos incluidos en cada entrega.
+- **Bucle de verificación en dos patas**: en el entorno remoto (Linux) se verifica todo lo verificable sin GPU ni pantalla (compilación C++, tests headless de lógica y parsing, servidor completo); lo visual y el feel se prueban en la máquina del usuario (**Windows 10/11**, la plataforma objetivo), con comandos exactos incluidos en cada entrega.
 - **Cada hito termina en un commit pusheado** con instrucciones de ejecución y una lista corta de "qué mirar". El feedback útil del usuario es: pegar el error de compilación tal cual, o describir/capturar lo que ve.
 - Toolchain autocontenida: el build C++ solo requiere CMake ≥ 3.24 y un compilador; las dependencias (SDL3, ImGui, glslang como compilador de shaders, etc.) las descarga y compila el propio build con versiones fijadas.
 
@@ -36,7 +36,7 @@ Cada hito termina en algo ejecutable y demostrable. Estimaciones en sesiones de 
 
 CMake + FetchContent (SDL3, GLM, cgltf, stb, ImGui) compilando en Windows y Linux. GPU device + swapchain con clear; paso de build que compila GLSL → SPIR-V (`glslc`); primer pipeline gráfico y triángulo en pantalla; ImGui integrado con contador de FPS. Estructura de carpetas de `docs/02` y estilo C++ decididos.
 
-✅ *Hecho cuando*: `cmake --build` produce un binario que muestra el triángulo y el overlay de ImGui a 60 fps en ambas plataformas.
+✅ *Hecho cuando*: `cmake --build` produce un binario que muestra el triángulo y el overlay de ImGui a 60 fps en Windows 10/11 (plataforma objetivo); en Linux (entorno del agente) compila y pasa el selftest headless.
 
 ### M1′ — Coche conducible en local (4–6 sesiones)
 
