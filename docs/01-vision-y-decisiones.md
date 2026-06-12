@@ -51,18 +51,20 @@ Los workspaces npm siguen para el lado TS (servidor, shared, sonda web). El clie
 
 ### D7 — Mapas con Tiled (formato JSON) ⚠️ *sustituida por D12*
 
-### D8 — Cliente nativo 3D low-poly con renderer propio: C++ + raylib (2026‑06)
+### D8 — Cliente nativo 3D low-poly con renderer propio: C++ + SDL3 GPU (2026‑06)
 
-**Decisión**: el cliente deja el navegador y pasa a ser un binario nativo de escritorio (Windows/Linux) escrito en **C++**, usando **raylib** como capa de plataforma (ventana, input, carga de glTF, audio) y construyendo **nuestro propio render** encima: cámara, materiales, iluminación, niebla, post-procesado y sombras son código nuestro (shaders GLSL propios).
+**Decisión**: el cliente deja el navegador y pasa a ser un binario nativo de escritorio (Windows/Linux; macOS posible más adelante) escrito en **C++**, con **SDL3** como capa de plataforma (ventana, input, audio) y **nuestro propio render** construido sobre la **SDL3 GPU API** — el API gráfico moderno de SDL (command buffers, render passes y pipelines explícitos; backends Vulkan/D3D12/Metal). Los shaders son nuestros, en GLSL `#version 450`, compilados offline a **SPIR-V** con `glslc` como paso de build; durante el POC se fuerza el backend Vulkan en Windows y Linux para manejar un único formato de shader (el cross-compile a DX12/Metal con SDL_shadercross queda para cuando importe). Kit alrededor: **GLM** (matemáticas), **cgltf** (carga de glTF), **stb_image**, **Dear ImGui** (HUD de debug; tiene backend oficial de SDL GPU).
 
-**Justificación**: interés explícito en gráficos a bajo nivel y control artístico total, con los costes sobre la mesa: se asume conscientemente que el POC crece (el motor se come sesiones antes que el juego). raylib se elige frente a OpenGL crudo porque resuelve la fontanería no formativa (contexto, ventana, loaders) manteniendo el render como territorio propio — y debajo *es* OpenGL: `rlgl` permite bajar al metal gradualmente cuando interese.
+> **Revisión (2026‑06, antes de implementar)**: la formulación inicial de D8 era raylib sobre OpenGL 3.3 core. Se revisó al pesar que toda la familia OpenGL está congelada (la última versión, 4.6, es de 2017): si el motivo del renderer propio es aprender gráficos con proyección de futuro, la inversión debe ir a un API vivo. SDL3 GPU se eligió frente a Vulkan directo (cuyo peaje de fontanería dobla otra vez el calendario) y frente a WebGPU/Dawn (dependencia pesada en C++): da los conceptos GPU modernos con la sincronización gestionada, y la misma dependencia resuelve la capa de plataforma que aportaba raylib.
 
-**OpenGL concreto**: en escritorio raylib usa OpenGL **3.3 core** por defecto (no OpenGL ES, que es su backend web/embebido — irrelevante ya). Empezamos ahí, con GLSL `#version 330`: cubre todo el alcance visual del POC. Subir al backend **4.3** (compute, SSBO) es un flag de recompilación el día que haga falta; 4.6 no tiene backend oficial en raylib y no contiene nada que el POC necesite. Quedarse en 3.3 además no cierra la puerta a macOS (capado a GL 4.1), aunque macOS **no es objetivo** del POC.
+**Justificación**: interés explícito en gráficos a bajo nivel sobre un API con futuro y control artístico total, con los costes sobre la mesa: sin las pilas de raylib (carga de modelos, cámara, texto) el POC sube a ~17–27 sesiones (ver plan), y SDL3 GPU es un API joven (estable desde 2025) con menos literatura que OpenGL — se asume, apoyándonos en los ejemplos oficiales y el backend de ImGui.
 
 **Consecuencias**:
-- Distribución por descarga de binario (la distribución por URL muere con el navegador).
+- Distribución por descarga de binario (la distribución por URL murió con el navegador).
+- Paso de compilación de shaders en el build (GLSL → SPIR-V).
+- macOS deja de estar vetado (backend Metal vía shadercross), aunque sigue fuera del POC.
 - Pipeline de arte 3D (D12) y re-plan completo del POC (`docs/03-plan-poc.md`).
-- Riesgo principal del proyecto pasa a ser el *scope creep de motor*; se mitiga con una lista cerrada de features de render para el POC.
+- El riesgo principal del proyecto sigue siendo el *scope creep de motor*; misma mitigación: lista cerrada de features de render para el POC.
 
 ### D9 — Simulación plana presentada en 3D (2026‑06)
 
@@ -101,4 +103,4 @@ Los workspaces npm siguen para el lado TS (servidor, shared, sonda web). El clie
 - Predicción local: ¿port C++ o física en C+WASM? (D11, decidir con datos del POC).
 - Desniveles reales post-POC: heightmap + proyección vs física 3D completa.
 - ¿Port del servidor a otro runtime si el sidecar Node molesta en el empaquetado single player?
-- Soporte macOS (hoy fuera de objetivo por OpenGL).
+- Soporte macOS post-POC (la SDL3 GPU API trae backend Metal; faltaría el cross-compile de shaders con SDL_shadercross).

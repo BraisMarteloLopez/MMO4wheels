@@ -2,11 +2,11 @@
 
 Juego de coches con vista aérea y estética **low-poly 3D** (referencia de tono: los mapas de Risk of Rain 2), planteado como **single MMO**: se juega como experiencia individual, pero sobre una arquitectura cliente‑servidor con servidor autoritativo desde el día 1. Esto deja abiertas las dos puertas de futuro: convertirlo en multijugador real o empaquetarlo como single player puro (servidor local).
 
-El cliente es un binario nativo de escritorio con **renderer propio** (C++ + raylib sobre OpenGL): los shaders, la luz, la niebla y el post-procesado son código nuestro. La simulación del servidor es plana (x, y, rumbo); el 3D es presentación.
+El cliente es un binario nativo de escritorio con **renderer propio** construido sobre la **SDL3 GPU API** (C++): pipelines, shaders (GLSL → SPIR-V), luz, niebla y post-procesado son código nuestro. La simulación del servidor es plana (x, y, rumbo); el 3D es presentación.
 
 El objetivo actual es un POC (Proof of Concept): conducir un coche por un escenario con atmósfera propia y realizar interacciones reales con el servidor (movimiento autoritativo, zonas de interacción, persistencia del mundo).
 
-**Estado: re-planificado tras pivote a 3D nativo (2026‑06).** El esqueleto web M0 está completado y su servidor se conserva tal cual; el cliente web queda como sonda de debug hasta que el cliente nativo lo sustituya. Siguiente hito: **M0′ — toolchain C++/raylib** (ver [plan del POC](docs/03-plan-poc.md)).
+**Estado: re-planificado tras pivote a 3D nativo (2026‑06).** El esqueleto web M0 está completado y su servidor se conserva tal cual; el cliente web queda como sonda de debug hasta que el cliente nativo lo sustituya. Siguiente hito: **M0′ — toolchain C++/SDL3 GPU** (ver [plan del POC](docs/03-plan-poc.md)).
 
 ## Decisiones mayores
 
@@ -14,7 +14,7 @@ El objetivo actual es un POC (Proof of Concept): conducir un coche por un escena
 |---|---|
 | Estética | Low-poly 3D con foco artístico, vista aérea |
 | Arquitectura | Cliente‑servidor, servidor autoritativo (también en single player) |
-| Cliente | C++ + raylib, renderer propio (OpenGL 3.3 core, GLSL 330) |
+| Cliente | C++ + SDL3, renderer propio sobre SDL3 GPU API (GLSL 450 → SPIR-V, backend Vulkan) |
 | Servidor | Node.js + Colyseus 0.17 + TypeScript |
 | Simulación | Plana (2D en planta) a tick fijo, presentada en 3D |
 | Niveles | Blender → glTF, única fuente para render (cliente) y colisión/zonas (servidor) |
@@ -47,7 +47,7 @@ Las instrucciones de compilación del cliente nativo se añadirán con M0′.
 
 ```
 MMO4wheels/
-├── client-native/   # C++ + raylib + CMake: el cliente del juego (desde M0′)
+├── client-native/   # C++ + SDL3 + CMake: el cliente del juego (desde M0′)
 ├── server/          # Node.js + Colyseus: sala del mundo, simulación a tick fijo
 ├── shared/          # constantes, tipos de mensajes y física (TS); genera constants.h
 ├── client/          # sonda web M0 (Phaser) — se retira al cerrar el POC nativo

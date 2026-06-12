@@ -3,22 +3,24 @@
 ## Vista general
 
 ```
-┌──────────── Cliente nativo (C++ + raylib) ────────────┐      ┌────────────── Servidor (Node.js) ─────────────┐
+┌─────────── Cliente nativo (C++ + SDL3 GPU) ───────────┐      ┌────────────── Servidor (Node.js) ─────────────┐
 │                                                        │      │  Colyseus + TypeScript                         │
-│  Plataforma (raylib): ventana, input, glTF, audio      │  WS  │                                                │
-│  Renderer propio (OpenGL 3.3 core, GLSL 330):          │◄────►│  · WorldRoom (sala autoritativa)               │
-│   · cámara aérea, materiales, luz direccional          │      │  · Simulación 2D en planta a tick fijo (20 Hz) │
-│   · niebla, tonemap + bloom, sombras simples           │      │  · stepCar() + colisiones + zonas              │
-│  Mundo: snapshots interpolados (~100 ms)               │      │  · Validación de inputs                        │
-│  Red: SDK nativo Colyseus (spike) / WS propio          │      │  · Estado: Colyseus Schema                     │
-│  HUD/debug: ping, tick, overlay                        │      │  · Persistencia (POC: JSON → interfaz Storage) │
-└────────────────────────────────────────────────────────┘      └────────────────────────────────────────────────┘
-                         ▲                                                        ▲
-                         │ mallas y materiales                                    │ colisión 2D y zonas (nodos col_*/zone_*)
-                  ┌──────┴──────────────────────────────────────────────────────┐│
-                  │  assets/levels/*.gltf — exportado desde Blender             ├┘
-                  │  (única fuente de verdad del nivel)                         │
-                  └─────────────────────────────────────────────────────────────┘
+│  Plataforma (SDL3): ventana, input, audio, GPU device  │  WS  │                                                │
+│  Renderer propio (SDL3 GPU API, GLSL 450 → SPIR-V):    │◄────►│  · WorldRoom (sala autoritativa)               │
+│   · cámara aérea, pipelines y passes explícitos        │      │  · Simulación 2D en planta a tick fijo (20 Hz) │
+│   · luz direccional, niebla, tonemap + bloom           │      │  · stepCar() + colisiones + zonas              │
+│   · sombras simples (shadow map / blob)                │      │  · Validación de inputs                        │
+│  Escena: cgltf (glTF), stb_image, GLM                  │      │  · Estado: Colyseus Schema                     │
+│  Mundo: snapshots interpolados (~100 ms)               │      │  · Persistencia (POC: JSON → interfaz Storage) │
+│  Red: SDK nativo Colyseus (spike) / WS propio          │      └────────────────────────────────────────────────┘
+│  Debug: Dear ImGui (ping, tick, overlays)              │                              ▲
+└────────────────────────────────────────────────────────┘                              │ colisión 2D y zonas
+                         ▲                                                              │ (nodos col_*/zone_*)
+                         │ mallas y materiales                                          │
+                  ┌──────┴────────────────────────────────────────────────────────────┐│
+                  │  assets/levels/*.gltf — exportado desde Blender                    ├┘
+                  │  (única fuente de verdad del nivel)                                │
+                  └────────────────────────────────────────────────────────────────────┘
 ```
 
 Principio rector intacto: **el servidor simula, el cliente presenta**. La simulación es plana (x, y, rumbo — ver D9); el 3D es presentación.
@@ -38,11 +40,12 @@ Sin cambios de fondo respecto al M0 verificado:
 
 Capas, de abajo arriba:
 
-1. **Plataforma — raylib**: ventana, contexto OpenGL (3.3 core en escritorio; *no* OpenGL ES, que es el backend web/embebido de raylib), input, carga de modelos glTF, audio. Es la frontera de "fontanería que no escribimos".
-2. **Renderer propio**: todo lo que se ve es código nuestro — cámara aérea que sigue al coche, pase principal con luz direccional y niebla por distancia, sombras simples (shadow map básico, con *blob shadows* como salida digna si se enquista), post-procesado mínimo (tonemapping + bloom ligero) vía render textures y shaders GLSL 330 propios. Subir al backend 4.3 de raylib (compute/SSBO) es recompilar, cuando haga falta — no en el POC.
-3. **Mundo**: réplica local del estado del servidor. Entidades renderizadas con **interpolación** entre los dos últimos snapshots (~100 ms de retraso de presentación). Predicción local: post-POC (D11).
-4. **Red**: escalera de D10 — SDK nativo de Colyseus, validado con spike temprano; fallbacks documentados que conservan el servidor.
-5. **HUD/debug**: ping, tick del servidor, velocidad; overlay de debug (posición autoritativa, colisión del nivel en wireframe, latencia artificial configurable).
+1. **Plataforma — SDL3**: ventana, eventos/input, audio y la creación del *GPU device*. Es la única dependencia "grande"; sustituye a la pareja GLFW+OpenGL del enfoque clásico.
+2. **Renderer propio — sobre la SDL3 GPU API**: command buffers, render passes y pipelines explícitos escritos por nosotros. Pase principal con luz direccional y niebla por distancia; sombras simples (shadow map básico, con *blob shadows* como salida digna si se enquista); post-procesado mínimo (tonemapping + bloom ligero) sobre render targets. Shaders en GLSL `#version 450` compilados a **SPIR-V** con `glslc` como paso del build (CMake). Durante el POC se fuerza el **backend Vulkan** en Windows y Linux: un único formato de shader; DX12/Metal vía SDL_shadercross cuando interese (macOS incluido).
+3. **Escena/assets**: carga de glTF con **cgltf**, texturas con **stb_image**, matemáticas con **GLM**. Materiales de color plano (low-poly): el "material" del POC es deliberadamente mínimo.
+4. **Mundo**: réplica local del estado del servidor. Entidades renderizadas con **interpolación** entre los dos últimos snapshots (~100 ms de retraso de presentación). Predicción local: post-POC (D11).
+5. **Red**: escalera de D10 — SDK nativo de Colyseus, validado con spike temprano; fallbacks documentados que conservan el servidor.
+6. **HUD/debug — Dear ImGui** (backend oficial SDL GPU): ping, tick, velocidad, overlay de debug (posición autoritativa, colisión del nivel, latencia artificial configurable). El HUD "de juego" definitivo es post-POC; ImGui es la herramienta de desarrollo.
 
 Bucle del cliente: render a la tasa del monitor, totalmente desacoplado del tick de red (20 Hz); el muestreo de input se envía a tasa fija con número de secuencia.
 
@@ -64,18 +67,20 @@ Bucle del cliente: render a la tasa del monitor, totalmente desacoplado del tick
 
 - Blender es el editor de niveles. Un `.blend` por mapa en `assets/levels/src/`, exportado a glTF en `assets/levels/`.
 - **Convención de nombres** sobre nodos/objetos: `col_*` (geometría de colisión: su huella en planta se convierte en polígonos 2D para el servidor), `zone_*` (zonas de interacción), `spawn_*` (puntos de aparición). El resto es decorado: el cliente lo renderiza, el servidor lo ignora.
-- El cliente carga el mismo glTF con raylib y lo renderiza con nuestros shaders.
+- El cliente carga el mismo glTF con cgltf y lo renderiza con nuestros pipelines.
 
 ## Estructura del repositorio (objetivo)
 
 ```
 MMO4wheels/
 ├── package.json          # npm workspaces: shared, server, client (sonda web)
-├── client-native/        # C++ + raylib + CMake — el cliente del juego
-│   ├── CMakeLists.txt
+├── client-native/        # C++ + SDL3 + CMake — el cliente del juego
+│   ├── CMakeLists.txt    # FetchContent: SDL3, GLM, cgltf, stb, imgui; glslc para shaders
+│   ├── shaders/          # GLSL 450 (fuente) → .spv generados en build
 │   └── src/
-│       ├── platform/     # arranque, ventana, bucle
-│       ├── render/       # cámara, pases, shaders, post
+│       ├── platform/     # arranque, ventana, bucle, input
+│       ├── render/       # device, pipelines, passes, post, sombras
+│       ├── scene/        # carga glTF, materiales, transforms
 │       ├── world/        # réplica de estado, interpolación
 │       ├── net/          # conexión (SDK nativo / WS)
 │       └── generated/    # constants.h (no editar a mano)
