@@ -6,7 +6,7 @@ El cliente es un binario nativo de escritorio con **renderer propio** construido
 
 El objetivo actual es un POC (Proof of Concept): conducir un coche por un escenario con atmósfera propia y realizar interacciones reales con el servidor (movimiento autoritativo, zonas de interacción, persistencia del mundo).
 
-**Estado: M0′ entregado** — cliente nativo compilando con build autocontenido (SDL3 + ImGui + glslang vía FetchContent), pipeline de shaders GLSL→SPIR-V, triángulo + overlay de debug, selftest headless. Pendiente: verificación visual en máquina con GPU. Siguiente hito: **M1′ — coche conducible en local** (ver [plan del POC](docs/03-plan-poc.md)). El servidor del M0 web se conserva tal cual; el cliente web queda como sonda de debug.
+**Estado: M1′ entregado** — coche conducible en escenario 3D: física arcade compartida (TS en `shared/` + port C++ con paridad verificada al centímetro), coche glTF placeholder generado por script, render con profundidad y luz direccional, suelo con rejilla, cámara aérea con seguimiento y panel de **tuneo en vivo** (física y cámara). Pendiente: verificación visual y de feel en Windows. Siguiente hito: **M2′ — el look** (ver [plan del POC](docs/03-plan-poc.md)). El servidor del M0 web se conserva tal cual; el cliente web queda como sonda de debug.
 
 ## Decisiones mayores
 

@@ -12,7 +12,8 @@
     "dev": "concurrently -k -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "smoke": "tsx server/scripts/smoke.ts"
+    "smoke": "tsx server/scripts/smoke.ts",
+    "gen:constants": "tsx shared/scripts/gen-constants.ts"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",

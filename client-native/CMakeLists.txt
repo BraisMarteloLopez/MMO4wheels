@@ -37,7 +37,19 @@ set(GLSLANG_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(glslang
   URL https://github.com/KhronosGroup/glslang/archive/refs/tags/15.4.0.tar.gz)
 
-FetchContent_MakeAvailable(sdl3 imgui glslang)
+# GLM: matemáticas (header-only)
+FetchContent_Declare(glm
+  URL https://github.com/g-truc/glm/archive/refs/tags/1.0.1.tar.gz)
+
+# cgltf: carga de glTF (header-only)
+FetchContent_Declare(cgltf
+  URL https://github.com/jkuhlmann/cgltf/archive/refs/tags/v1.15.tar.gz
+  SOURCE_SUBDIR _no_cmake_aqui)
+
+FetchContent_MakeAvailable(sdl3 imgui glslang glm cgltf)
+
+add_library(cgltf_header INTERFACE)
+target_include_directories(cgltf_header INTERFACE ${cgltf_SOURCE_DIR})
 
 add_library(imgui_lib STATIC
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -56,8 +68,10 @@ set(SHADER_OUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT_DIR})
 
 set(SHADERS
-  triangle.vert
-  triangle.frag)
+  mesh.vert
+  mesh.frag
+  ground.vert
+  ground.frag)
 
 set(SPV_FILES "")
 foreach(SHADER IN LISTS SHADERS)
@@ -71,12 +85,25 @@ foreach(SHADER IN LISTS SHADERS)
 endforeach()
 add_custom_target(shaders ALL DEPENDS ${SPV_FILES})
 
+# ---------------- Assets (copiados junto al binario) ----------------
+
+add_custom_target(copy_assets ALL
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          ${CMAKE_CURRENT_SOURCE_DIR}/../assets/models
+          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets/models
+  COMMENT "Copiando assets/models junto al binario")
+
 # ---------------- Ejecutable ----------------
 
 add_executable(mmo4wheels
   src/main.cpp
   src/platform/app.cpp
-  src/render/renderer.cpp)
+  src/render/renderer.cpp
+  src/render/mesh.cpp
+  src/scene/gltf_loader.cpp
+  src/scene/procedural.cpp
+  src/sim/car.cpp)
 target_include_directories(mmo4wheels PRIVATE src)
-target_link_libraries(mmo4wheels PRIVATE SDL3::SDL3 imgui_lib)
-add_dependencies(mmo4wheels shaders)
+target_compile_definitions(mmo4wheels PRIVATE GLM_FORCE_DEPTH_ZERO_TO_ONE)
+target_link_libraries(mmo4wheels PRIVATE SDL3::SDL3 imgui_lib glm::glm cgltf_header)
+add_dependencies(mmo4wheels shaders copy_assets)
